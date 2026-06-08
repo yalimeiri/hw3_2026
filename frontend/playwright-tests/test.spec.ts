@@ -1,74 +1,107 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 const BASE_URL = 'http://localhost:3000';
 
+const registerAndLogin = async (page: Page, username: string) => {
+  await page.goto(`${BASE_URL}/create-user`);
+  await page.waitForSelector('[data-testid="create_user_form"]');
+  await page.fill('[data-testid="create_user_form_name"]', 'Playwright User');
+  await page.fill('[data-testid="create_user_form_email"]', `${username}@test.com`);
+  await page.fill('[data-testid="create_user_form_username"]', username);
+  await page.fill('[data-testid="create_user_form_password"]', 'password123');
+  await page.click('[data-testid="create_user_form_create_user"]');
+
+  // Wait for the redirect to home, which only happens after the user is saved.
+  await page.waitForURL(`${BASE_URL}/`);
+
+  await page.goto(`${BASE_URL}/login`);
+  await page.waitForSelector('[data-testid="login_form"]');
+  await page.fill('[data-testid="login_form_username"]', username);
+  await page.fill('[data-testid="login_form_password"]', 'password123');
+  await page.click('[data-testid="login_form_login"]');
+
+  // Confirm login completed: the logout button only renders when logged in.
+  await expect(page.locator('[data-testid="logout"]')).toBeVisible();
+};
+
 test('CREATE - add a new note', async ({ page }) => {
-  await page.goto(BASE_URL);
-  
-  // Click add new note button
+  const username = `pw_create_${Date.now()}`;
+  await registerAndLogin(page, username);
+
   await page.click('button[name="add_new_note"]');
-  
-  // Fill title, author, and content
   await page.fill('input[placeholder="Title"]', 'Playwright Test Title');
-  await page.fill('input[placeholder="Author"]', 'Playwright Author');
   await page.fill('textarea[name="text_input_new_note"]', 'Playwright test note');
-  
-  // Click save
   await page.click('button[name="text_input_save_new_note"]');
-  
-  // Check notification
+
   await expect(page.locator('.notification')).toHaveText('Added a new note');
 });
 
 test('READ - notes are displayed', async ({ page }) => {
   await page.goto(BASE_URL);
-  
-  // Check that notes are visible
+
   const notes = page.locator('.note');
   await expect(notes.first()).toBeVisible();
-  
-  // Check pagination buttons exist
   await expect(page.locator('button[name="first"]')).toBeVisible();
   await expect(page.locator('button[name="next"]')).toBeVisible();
 });
 
 test('UPDATE - edit a note', async ({ page }) => {
-  await page.goto(BASE_URL);
-  
-  // Get first note's id
-  const firstNote = page.locator('.note').first();
-  const noteId = await firstNote.getAttribute('data-testid');
-  
-  // Click edit button
+  const username = `pw_update_${Date.now()}`;
+  await registerAndLogin(page, username);
+
+  await page.click('button[name="add_new_note"]');
+  await page.fill('input[placeholder="Title"]', 'Note To Edit');
+  await page.fill('textarea[name="text_input_new_note"]', 'Original content');
+  await page.click('button[name="text_input_save_new_note"]');
+  await expect(page.locator('.notification')).toHaveText('Added a new note');
+
+  const createdNote = page.locator('.note').filter({ hasText: 'Note To Edit' }).first();
+  const noteId = await createdNote.getAttribute('data-testid');
+
   await page.click(`button[data-testid="edit-${noteId}"]`);
-  
-  // Clear and type new content
   await page.fill(`textarea[data-testid="text_input-${noteId}"]`, 'Updated by playwright');
-  
-  // Click save
   await page.click(`button[data-testid="text_input_save-${noteId}"]`);
-  
-  // Check notification
+
   await expect(page.locator('.notification')).toHaveText('Note updated');
 });
 
 test('DELETE - delete a note', async ({ page }) => {
-  await page.goto(BASE_URL);
-  
-  await expect(page.locator('.note').first()).toBeVisible();
-  // Count notes before
-  const notesBefore = await page.locator('.note').count();
-  
-  // Get first note id
-  const firstNote = page.locator('.note').first();
-  const noteId = await firstNote.getAttribute('data-testid');
-  
-  // Click delete
+  const username = `pw_delete_${Date.now()}`;
+  await registerAndLogin(page, username);
+
+  await page.click('button[name="add_new_note"]');
+  await page.fill('input[placeholder="Title"]', 'Note To Delete');
+  await page.fill('textarea[name="text_input_new_note"]', 'Delete me');
+  await page.click('button[name="text_input_save_new_note"]');
+  await expect(page.locator('.notification')).toHaveText('Added a new note');
+
+  const createdNote = page.locator('.note').filter({ hasText: 'Note To Delete' }).first();
+  const noteId = await createdNote.getAttribute('data-testid');
+
   await page.click(`button[data-testid="delete-${noteId}"]`);
-  
-  // Check notification
   await expect(page.locator('.notification')).toHaveText('Note deleted');
-  
-  // Check one less note
-  await expect(page.locator('.note')).toHaveCount(notesBefore - 1);
+  await expect(page.locator(`[data-testid="${noteId}"]`)).toHaveCount(0);
+});
+
+test('AI assistant appends generated text to the new note body', async ({ page }) => {
+  test.setTimeout(120000);
+
+  const username = `pw_ai_${Date.now()}`;
+  await registerAndLogin(page, username);
+
+  await page.click('button[name="add_new_note"]');
+  await page.click('[data-testid="help_me_write"]');
+
+  const textarea = page.locator('textarea[name="text_input_new_note"]');
+  const before = await textarea.inputValue();
+
+  await page.fill('[data-testid="help_me_write_prompt"]', 'Write a short greeting for my note.');
+  await page.click('[data-testid="help_me_write_submit"]');
+
+  await expect
+    .poll(async () => (await textarea.inputValue()).length, { timeout: 90000 })
+    .toBeGreaterThan(before.length);
+
+  const after = await textarea.inputValue();
+  expect(after.length).toBeGreaterThan(0);
 });

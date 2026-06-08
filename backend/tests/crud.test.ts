@@ -13,15 +13,36 @@ afterAll(async () => {
 
 describe('CRUD operations', () => {
   let createdId: string;
+  let token: string;
+
+  beforeAll(async () => {
+    await request(app)
+      .post('/users')
+      .send({
+        name: 'Crud Tester',
+        email: 'crud@test.com',
+        username: 'crud_test_user',
+        password: 'password123',
+      });
+
+    const loginRes = await request(app)
+      .post('/login')
+      .send({
+        username: 'crud_test_user',
+        password: 'password123',
+      });
+
+    token = loginRes.body.token;
+  });
 
   // CREATE
   test('should create a new note', async () => {
     const res = await request(app)
       .post('/notes')
+      .set('Authorization', `Bearer ${token}`)
       .send({
         title: 'Jest Test Note',
         content: 'Created by jest test',
-        author: { name: 'Tester', email: 'test@test.com' }
       });
     expect(res.status).toBe(201);
     expect(res.body.title).toBe('Jest Test Note');
@@ -39,6 +60,7 @@ describe('CRUD operations', () => {
   test('should update the note', async () => {
     const res = await request(app)
       .put(`/notes/${createdId}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ title: 'Updated Title', content: 'Updated content' });
     expect(res.status).toBe(200);
     expect(res.body.title).toBe('Updated Title');
@@ -46,7 +68,9 @@ describe('CRUD operations', () => {
 
   // DELETE
   test('should delete the note', async () => {
-    const res = await request(app).delete(`/notes/${createdId}`);
+    const res = await request(app)
+      .delete(`/notes/${createdId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(204);
   });
 });

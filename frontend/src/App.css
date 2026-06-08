@@ -1,3 +1,59 @@
+  .home-nav {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px;
+  }
+
+  .page-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 320px;
+    padding: 20px;
+    background-color: rgb(58, 81, 78);
+    color: #fff;
+  }
+
+  .auth-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .auth-form input {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+  }
+
+  .auth-error {
+    color: #ffb4b4;
+    margin: 0;
+  }
+
+  .note-content-row,
+  .ai-prompt-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .note-content-row textarea,
+  .ai-prompt-row input {
+    flex: 1;
+  }
+
+  .ai-star-btn {
+    min-width: 48px;
+  }
+
   .note {
     padding: 16px;
     margin: 16px;

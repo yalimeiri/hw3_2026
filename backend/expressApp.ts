@@ -4,6 +4,7 @@ import 'express-async-errors';
 import dotenv from 'dotenv';
 import noteRoutes from './routes/noteRoutes';
 import authRoutes from './routes/authRoutes';
+import aiRoutes from './routes/aiRoutes';
 import logger from './middlewares/logger';
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/notes', noteRoutes);
+app.use('/ai', aiRoutes);
 app.use('/', authRoutes);
 
 // 404 handler for unknown routes
