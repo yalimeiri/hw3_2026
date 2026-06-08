@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import Note from '../models/note';
+import Note from '../models/Note';
 
 dotenv.config();
 

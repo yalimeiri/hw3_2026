@@ -3,16 +3,23 @@ import mongoose from 'mongoose';
 const noteSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   author: {
-    name: { type: String },
-    email: { type: String }
+    type: {
+      name: { type: String },
+      email: { type: String },
+    },
+    default: null,
   },
   content: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
 });
 
 const Note = mongoose.model('Note', noteSchema);

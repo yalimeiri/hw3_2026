@@ -1,4 +1,4 @@
-import Note from '../models/note';
+import Note from '../models/Note';
 import { POSTS_PER_PAGE } from '../consts';
 
 export const getAllNotes = async (query: Record<string, unknown>) => {
