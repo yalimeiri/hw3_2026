@@ -1,9 +1,22 @@
 import { Request, Response } from 'express';
 import * as noteService from '../services/noteService';
+import * as userService from '../services/userService';
 
 export const getAllNotes = async (req: Request, res: Response) => {
   const { notes, count } = await noteService.getAllNotes(req.query);
   res.set('X-Total-Count', String(count));
+  res.status(200).json(notes);
+};
+
+export const filterNotes = async (req: Request, res: Response) => {
+  const query = req.query.query;
+  if (typeof query !== 'string' || query.length === 0) {
+    res.status(400).json({ error: 'query parameter is required' });
+    return;
+  }
+
+  const notes = await noteService.filterNotes(query);
+  res.set('X-Total-Count', String(notes.length));
   res.status(200).json(notes);
 };
 
@@ -27,12 +40,24 @@ export const getNoteByIndex = async (req: Request, res: Response) => {
 };
 
 export const createNote = async (req: Request, res: Response) => {
-  const { title, content, author } = req.body;
+  const { title, content } = req.body;
   if (!title || !content) {
     res.status(400).json({ error: 'Title and content are required' });
     return;
   }
-  const note = await noteService.createNote({ title, content, author });
+
+  const user = await userService.getUserById(req.user!.id);
+  if (!user) {
+    res.status(401).json({ error: 'user not found' });
+    return;
+  }
+
+  const note = await noteService.createNote({
+    title,
+    content,
+    author: { name: user.name, email: user.email },
+    user: user._id,
+  });
   res.status(201).json(note);
 };
 

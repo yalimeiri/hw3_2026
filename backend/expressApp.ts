@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'express-async-errors';
 import dotenv from 'dotenv';
 import noteRoutes from './routes/noteRoutes';
+import authRoutes from './routes/authRoutes';
 import logger from './middlewares/logger';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/notes', noteRoutes);
+app.use('/', authRoutes);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {

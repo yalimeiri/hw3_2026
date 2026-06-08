@@ -1,6 +1,17 @@
 import Note from '../models/Note';
 import { POSTS_PER_PAGE } from '../consts';
 
+const escapeRegex = (text: string): string => {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+export const filterNotes = async (query: string) => {
+  const pattern = new RegExp(escapeRegex(query), 'i');
+  return await Note.find({ content: pattern })
+    .sort({ _id: 1 })
+    .limit(POSTS_PER_PAGE);
+};
+
 export const getAllNotes = async (query: Record<string, unknown>) => {
   const page = Number(query._page) || 1;
   const perPage = Number(query._per_page) || POSTS_PER_PAGE;
