@@ -11,4 +11,19 @@ export default defineConfig({
     headless: true,
     baseURL: 'http://localhost:3000',
   },
+  webServer: [
+    {
+      command: 'npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: true,
+      timeout: 120000,
+    },
+    {
+      command: 'node index.js',
+      cwd: '../backend',
+      url: 'http://localhost:3001/health',
+      reuseExistingServer: true,
+      timeout: 120000,
+    },
+  ],
 });
