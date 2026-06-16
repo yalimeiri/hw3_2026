@@ -20,7 +20,7 @@ const registerAndLogin = async (page: Page, username: string) => {
   await page.fill('[data-testid="login_form_password"]', 'password123');
   await page.click('[data-testid="login_form_login"]');
 
-  // Confirm login completed: the logout button only renders when logged in.
+  await page.waitForURL(`${BASE_URL}/`);
   await expect(page.locator('[data-testid="logout"]')).toBeVisible();
 };
 
