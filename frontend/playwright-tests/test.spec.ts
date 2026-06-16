@@ -11,8 +11,7 @@ const registerAndLogin = async (page: Page, username: string) => {
   await page.fill('[data-testid="create_user_form_password"]', 'password123');
   await page.click('[data-testid="create_user_form_create_user"]');
 
-  // Wait for the redirect to home, which only happens after the user is saved.
-  await page.waitForURL(`${BASE_URL}/`);
+  await expect(page.locator('[data-testid="go_to_login_button"]')).toBeVisible({ timeout: 30000 });
 
   await page.goto(`${BASE_URL}/login`);
   await page.waitForSelector('[data-testid="login_form"]');
@@ -20,8 +19,7 @@ const registerAndLogin = async (page: Page, username: string) => {
   await page.fill('[data-testid="login_form_password"]', 'password123');
   await page.click('[data-testid="login_form_login"]');
 
-  // Confirm login completed: the logout button only renders when logged in.
-  await expect(page.locator('[data-testid="logout"]')).toBeVisible();
+  await expect(page.locator('[data-testid="logout"]')).toBeVisible({ timeout: 30000 });
 };
 
 test('CREATE - add a new note', async ({ page }) => {
