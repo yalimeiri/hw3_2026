@@ -13,6 +13,9 @@ const HomePage = () => {
   const { notes, currentPage, totalPages, notification, cache } = state;
   const { isLoggedIn, logout } = useAuth();
   const [refresh, setRefresh] = useState(0);
+  // Whether note bodies are run through the sanitizer before being injected as
+  // HTML. Defaults to ON (safe). State only: a refresh resets it back to ON.
+  const [sanitizerOn, setSanitizerOn] = useState(true);
 
   const fetchPage = useCallback(async (page: number) => {
     const response = await api.get(NOTES_URL, {
@@ -144,10 +147,20 @@ const HomePage = () => {
         <div className="notification">{notification}</div>
       )}
 
+      <div className="home-nav">
+        <button
+          data-testid="sanitizer_toggle"
+          className="neon-btn"
+          onClick={() => setSanitizerOn((previous) => !previous)}
+        >
+          {sanitizerOn ? 'Sanitizer: ON' : 'Sanitizer: OFF'}
+        </button>
+      </div>
+
       {isLoggedIn && <AddNote onSuccess={triggerRefresh} />}
 
       {notes.map((note) => (
-        <Note key={note._id} note={note} onSuccess={triggerRefresh} />
+        <Note key={note._id} note={note} onSuccess={triggerRefresh} sanitize={sanitizerOn} />
       ))}
 
       <Pagination
