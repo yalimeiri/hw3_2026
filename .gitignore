@@ -10,12 +10,6 @@ node_modules/
 *.log
 log.txt
 
-# Attacker server keystroke log (runtime artifact)
-keylog.txt
-
-# Presubmission script working dir
-tmp_submission_check/
-
 # Build output
 dist/
 build/

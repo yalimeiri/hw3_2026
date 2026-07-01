@@ -3,15 +3,13 @@ import { useNotes } from '../contexts/NotesContext';
 import { useAuth } from '../contexts/AuthContext';
 import type { Note as NoteType } from '../types';
 import api, { NOTES_URL } from '../utils/api';
-import { sanitizeHtml } from '../utils/sanitizeHtml';
 
 interface NoteProps {
   note: NoteType;
   onSuccess: () => void;
-  sanitize: boolean;
 }
 
-const Note = ({ note, onSuccess, sanitize }: NoteProps) => {
+const Note = ({ note, onSuccess }: NoteProps) => {
   const { _id, title, author, content } = note;
   const { dispatch } = useNotes();
   const { user } = useAuth();
@@ -20,12 +18,6 @@ const Note = ({ note, onSuccess, sanitize }: NoteProps) => {
   const [editContent, setEditContent] = useState(content);
 
   const canModify = user !== null && author?.email === user.email;
-
-  // The note body is rendered as HTML so formatting tags (<b>, <i>, <ul>, ...)
-  // are honored. When `sanitize` is on we scrub the HTML first; when it is off
-  // we inject the raw content and any embedded payload runs. This single
-  // dangerouslySetInnerHTML call is the entire XSS attack surface.
-  const renderedContent = sanitize ? sanitizeHtml(content) : content;
 
   const resetEditFields = () => {
     setEditTitle(title);
@@ -81,11 +73,7 @@ const Note = ({ note, onSuccess, sanitize }: NoteProps) => {
           <>
             <h2 className="note-title">{title}</h2>
             <p className="note-author">By {author?.name ?? 'Unknown'}</p>
-            <div
-              className="note-content"
-              data-testid="note_body"
-              dangerouslySetInnerHTML={{ __html: renderedContent }}
-            />
+            <p className="note-content">{content}</p>
           </>
         )}
       </div>
